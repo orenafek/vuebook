@@ -12,10 +12,20 @@
 </template>
 
 <script lang="ts">
+import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
 import { CodeEditor } from './editor';
 
-export default {
-    props: ['model'],
+@Component({
+    "emits": ['action']
+})
+class Cell extends Vue {
+    @Prop model: any
+    editor: CodeEditor
+
+    $refs: {input: HTMLDivElement}
+
+    private _isUpdating = false
+
     mounted() {
         this.editor = new CodeEditor(this.$refs.input, this.model.input);
         this.editor.on('change', () => this.updateModel());
@@ -26,13 +36,14 @@ export default {
                 this.editor.set(v);
             }
         });
-    },
-    methods: {
-        updateModel() {
-            this._isUpdating = true;
-            this.model.input = this.editor.get();
-            Promise.resolve().then(() => this._isUpdating = false);
-        }
+    }
+
+    updateModel() {
+        this._isUpdating = true;
+        this.model.input = this.editor.get();
+        Promise.resolve().then(() => this._isUpdating = false);
     }
 }
+
+export default toNative(Cell);
 </script>

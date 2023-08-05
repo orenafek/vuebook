@@ -8,23 +8,29 @@
 
 <script lang="ts">
 import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
-import type { NotebookApp } from '../notebook_model';
+import { NotebookActions } from '../control';
+import type { ModelImpl, NotebookApp } from '../notebook_model';
 // @ts-ignore
 import Cell from './cell.vue';
 
 @Component({
+    emits: ["cell:action"],
     components: { Cell }
 })
 class Notebook extends Vue {
-    @Prop model: NotebookApp.Model
+    @Prop model: ModelImpl
     _keys: Map<NotebookApp.Cell, number>
+    control: NotebookActions
 
     created() {
         this._keys = new Map;
+        this.control = new NotebookActions(this.model);
     }
 
     cellAction(cell: NotebookApp.Cell, action) {
-        this.$emit('cell:action', {cell, ...action});
+        action = {cell, ...action};
+        this.control.handleCellAction(action);
+        this.$emit('cell:action', action);
     }
 
     key(cell: NotebookApp.Cell) {

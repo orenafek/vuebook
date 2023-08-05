@@ -3,18 +3,23 @@
 </template>
 
 <script lang="ts">
+import { reactive } from 'vue';
 import { Component, Vue, toNative } from 'vue-facing-decorator';
-import { NotebookApp } from '../notebook_model';
+
+import { NotebookActions } from '../control';
+import { ModelImpl } from '../notebook_model';
 import Notebook from './notebook.vue';
 
 @Component({
   components: { Notebook }
 })
 class App extends Vue {
-    model: NotebookApp.Model
+    model: ModelImpl
+    control: NotebookActions
 
     created() {
-        this.model = {cells: [{kind: 'code', input: 'abc'}]};
+        this.model = reactive(new ModelImpl()).load();
+        window.addEventListener('beforeunload', () => this.model.save());
     }
 }
 
