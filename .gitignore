@@ -1,3 +1,6 @@
-dist/
+*.swp
+/dist
+/build
 node_modules/
 .idea/
+_npmlink
