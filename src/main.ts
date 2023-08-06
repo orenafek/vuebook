@@ -3,6 +3,8 @@ import { createApp } from 'vue';
 import AppComponent from './components/app.vue';
 
 import './index.scss';
+import './components/command-palette/index.scss';
+import './components/command-palette/themes/simple.scss';
 
 
 function main() {
