@@ -7,28 +7,35 @@
 </template>
 
 <script lang="ts">
-import { NotebookApp } from '../notebook_model';
+import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
+import type { NotebookApp } from '../notebook_model';
 // @ts-ignore
 import Cell from './cell.vue';
 
-export default {
-    props: ['model'],
+@Component({
+    components: { Cell }
+})
+class Notebook extends Vue {
+    @Prop model: NotebookApp.Model
+    _keys: Map<NotebookApp.Cell, number>
+
     created() {
         this._keys = new Map;
-    },
-    methods: {
-        cellAction(cell: NotebookApp.Cell, action) {
-            this.$emit('cell:action', {cell, ...action});
-        },
-        key(cell: NotebookApp.Cell) {
-            let v = this._keys.get(cell);
-            if (v === undefined) {
-                v = Math.max(0, ...this._keys.values()) + 1;
-                this._keys.set(cell, v);
-            }
-            return v;
+    }
+
+    cellAction(cell: NotebookApp.Cell, action) {
+        this.$emit('cell:action', {cell, ...action});
+    }
+
+    key(cell: NotebookApp.Cell) {
+        let v = this._keys.get(cell);
+        if (v === undefined) {
+            v = Math.max(0, ...this._keys.values()) + 1;
+            this._keys.set(cell, v);
         }
-    },
-    components: { Cell }
+        return v;
+    }
 }
+
+export default toNative(Notebook);
 </script>
