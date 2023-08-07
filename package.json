@@ -12,7 +12,11 @@
   },
   "devDependencies": {
     "@types/node": "^20.4.7",
+    "css-loader": "^6.8.1",
     "http-server": "^14.1.1",
+    "sass": "^1.64.2",
+    "sass-loader": "^13.3.2",
+    "style-loader": "^3.3.3",
     "ts-loader": "^9.4.4",
     "typescript": "^5.1.6",
     "vue-loader": "^17.2.2",

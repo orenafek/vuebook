@@ -1,4 +1,4 @@
-import { ModelImpl, Model as M } from './notebook_model';
+import { ModelImpl, Model as M } from './model';
 
 
 class NotebookActions {

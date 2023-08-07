@@ -1,7 +1,7 @@
 <template>
     <div>
         <command-palette ref="cmd" :commands="commands" @command="onCommand"/>
-        <notebook ref="notebook" :model="model"/>
+        <notebook ref="notebook" :model="model" @cell:action=""/>
     </div>
 </template>
 
@@ -11,8 +11,10 @@ import { Component, Vue, toNative } from 'vue-facing-decorator';
 import { useMagicKeys } from '@vueuse/core';
 
 import { NotebookActions } from '../control';
-import { ModelImpl } from '../notebook_model';
+import { ModelImpl } from '../model';
+//@ts-ignore
 import Notebook, { INotebook } from './notebook.vue';
+//@ts-ignore
 import CommandPalette, { ICommandPalette } from './command-palette/index.vue';
 
 @Component({

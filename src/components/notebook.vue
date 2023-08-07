@@ -15,7 +15,7 @@
 <script lang="ts">
 import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
 import { NotebookActions } from '../control';
-import type { ModelImpl, Model as M } from '../notebook_model';
+import type { ModelImpl, Model as M } from '../model';
 // @ts-ignore
 import Cell from './cell.vue';
 
