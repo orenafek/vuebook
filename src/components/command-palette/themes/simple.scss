@@ -70,7 +70,7 @@
     content-visibility: auto;
 
     cursor: pointer;
-    /*height: 48px;*/
+    line-height: 1.4;
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -78,9 +78,6 @@
     padding: 0 16px;
     color: var(--gray12);
     user-select: none;
-    /*will-change: background, color;
-    transition: all 150ms ease;
-    transition-property: none;*/
     position: relative;
 
     &[aria-selected='true'],
@@ -124,8 +121,6 @@
     max-height: 360px;
     overflow: auto;
     overscroll-behavior: contain;
-    /*transition: 100ms ease;
-    transition-property: height;*/
   }
 
   * + [command-group] {

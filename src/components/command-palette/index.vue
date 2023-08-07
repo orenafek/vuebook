@@ -1,5 +1,6 @@
 <template>
-    <Command :class="{open: this.isOpen}" theme="simple" class="root dialog-lightweight" @select-item="onSelect">
+    <Command class="root dialog-lightweight" :class="{open: this.isOpen}"
+             theme="simple" @select-item="onSelect">
         <Command-Input ref="m" placeholder=">" />
         <Command-List>
             <Command-Empty>No results found.</Command-Empty>
@@ -23,23 +24,26 @@ import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
 import { Command } from 'vue-command-palette';
 
 @Component({
-  components: { Command, 'Command-Input': Command.Input, 
-    'Command-Item': Command.Item, 'Command-Group': Command.Group, 
-    'Command-Empty': Command.Empty, 'Command-Separator': Command.Separator,
-    'Command-List': Command.List }
+    emits: ['command'],
+    components: { Command, 'Command-Input': Command.Input, 
+        'Command-Item': Command.Item, 'Command-Group': Command.Group, 
+        'Command-Empty': Command.Empty, 'Command-Separator': Command.Separator,
+        'Command-List': Command.List }
 })
 class CommandPalette extends Vue {
     @Prop commands: string[]
     isOpen = false
 
     onSelect(e: {value: string}) {
-        console.log(e);
+        this.$emit('command', {command: e.value});
+        this.close();
     }
 
     open() {
         this.isOpen = true;
         requestAnimationFrame(() =>
-        this.$refs.m.$refs.inputRef.focus());
+            // @ts-ignore  sorry, there's no proper way to do this, it seems...
+            this.$refs.m.$el.focus());
     }
 
     close() { this.isOpen = false; }

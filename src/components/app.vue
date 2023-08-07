@@ -1,7 +1,7 @@
 <template>
     <div>
-        <command-palette ref="cmd" :commands="commands"/>
-        <notebook :model="model"/>
+        <command-palette ref="cmd" :commands="commands" @command="onCommand"/>
+        <notebook ref="notebook" :model="model"/>
     </div>
 </template>
 
@@ -12,7 +12,7 @@ import { useMagicKeys } from '@vueuse/core';
 
 import { NotebookActions } from '../control';
 import { ModelImpl } from '../notebook_model';
-import Notebook from './notebook.vue';
+import Notebook, { INotebook } from './notebook.vue';
 import CommandPalette, { ICommandPalette } from './command-palette/index.vue';
 
 @Component({
@@ -22,9 +22,9 @@ class App extends Vue {
     model: ModelImpl
     control: NotebookActions
 
-    commands = ["insert-before", "insert-after", "delete", "clear"]
+    commands = ["exec", "exec-fwd", "insert-after", "delete", "clear"]
 
-    $refs: {cmd: ICommandPalette}
+    $refs: {cmd: ICommandPalette, notebook: INotebook}
 
     created() {
         this.model = reactive(new ModelImpl()).load();
@@ -33,6 +33,10 @@ class App extends Vue {
         const keys = useMagicKeys()
         watch(keys['Meta+K'], (v) => v && this.$refs.cmd.open());
         watch(keys['Escape'], (v) => v && this.$refs.cmd.close());
+    }
+
+    onCommand(command: {command: string}) {
+        this.$refs.notebook.command(command);
     }
 }
 

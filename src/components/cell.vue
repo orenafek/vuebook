@@ -3,7 +3,7 @@
         <div class="cell--input" ref="input"></div>
         <div class="cell--outputs">
             <div class="cell--output" v-for="out in model.outputs" :data-kind="out.kind">
-                <div v-if="['image/svg+xml', 'text/html'].includes(out.kind)"
+                <div v-if="htmlMime.includes(out.kind)"
                     class="payload image" v-html="out.payload"></div>
                 <div v-else class="payload">{{ out.payload }}</div>
             </div>
@@ -18,9 +18,10 @@ import { CodeEditor } from './editor';
 @Component({
     "emits": ['action']
 })
-class Cell extends Vue {
+class ICell extends Vue {
     @Prop model: any
     editor: CodeEditor
+    htmlMime = ['image/svg+xml', 'text/html']
 
     $refs: {input: HTMLDivElement}
 
@@ -32,7 +33,6 @@ class Cell extends Vue {
         this.editor.on('action', a => this.$emit('action', a));
         this.$watch(() => this.model.input, v => {
             if (!this._isUpdating) {
-                console.warn('--set editor', this.model);
                 this.editor.set(v);
             }
         });
@@ -45,5 +45,6 @@ class Cell extends Vue {
     }
 }
 
-export default toNative(Cell);
+export { ICell }
+export default toNative(ICell);
 </script>

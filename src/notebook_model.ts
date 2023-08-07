@@ -1,15 +1,10 @@
-import {EventEmitter} from 'events';
-import * as Vue from 'vue';
-
 import {LocalStore, Serialization} from './infra/store';
-// @ts-ignore
-import rootComponent from './components/notebook.vue';
 
 
-class ModelImpl implements NotebookApp.Model {
-    cells: NotebookApp.Cell[]
+class ModelImpl implements Model.Notebook {
+    cells: Model.Cell[]
 
-    store = new LocalStore<NotebookApp.Model>('untitled')
+    store = new LocalStore<Model.Notebook>('untitled')
 
     load() {
         return this.from(this.store.load());
@@ -19,16 +14,16 @@ class ModelImpl implements NotebookApp.Model {
         this.store.save({cells: this.cells});
     }
 
-    from(json?: {cells?: NotebookApp.Cell[]}) {
+    from(json?: {cells?: Model.Cell[]}) {
         this.cells = json?.cells ?? [this.mkCodeCell()];
         return this;
     }
 
-    clearOutputs(cell: NotebookApp.Cell) {
+    clearOutputs(cell: Model.Cell) {
         cell.outputs = [];
     }
 
-    insert(at: NotebookApp.Cell | number, newCell: NotebookApp.Cell,
+    insert(at: Model.Cell | number, newCell: Model.Cell,
            after: boolean = false) {
         if (typeof at !== 'number') {
             at = this.cells.indexOf(at);
@@ -38,12 +33,12 @@ class ModelImpl implements NotebookApp.Model {
         this.cells.splice(at, 0, newCell);
     }
 
-    delete(cell: NotebookApp.Cell) {
+    delete(cell: Model.Cell) {
         let at = this.cells.indexOf(cell);
         if (at >= 0) this.cells.splice(at, 1);
     }
 
-    mkCodeCell(code: string = ''): NotebookApp.Cell {
+    mkCodeCell(code: string = ''): Model.Cell {
         return {
             kind: 'code',
             input: code,
@@ -51,7 +46,7 @@ class ModelImpl implements NotebookApp.Model {
         };
     }
 
-    addResult(cell: NotebookApp.Cell, result: IMimeBundle) {
+    addResult(cell: Model.Cell, result: IMimeBundle) {
         let viewable = ['image/svg+xml', 'text/html', 'text/plain'];
         for (let kind of viewable) {
             let payload = result[kind];
@@ -62,11 +57,11 @@ class ModelImpl implements NotebookApp.Model {
         }
     }
 
-    addError(cell: NotebookApp.Cell, error: string) {
+    addError(cell: Model.Cell, error: string) {
         cell.outputs.push({kind: 'error', payload: error});
     }
 
-    writeOutput(cell: NotebookApp.Cell, text: string) {
+    writeOutput(cell: Model.Cell, text: string) {
         cell.outputs ??= [];
         let term = cell.outputs.find(o => o.kind === 'term');
         if (!term) cell.outputs.push(term = {kind: 'term', payload: ''});
@@ -76,18 +71,18 @@ class ModelImpl implements NotebookApp.Model {
 
 
 /*
-class NotebookApp extends EventEmitter {
-    model: NotebookApp.Model
+class Model extends EventEmitter {
+    model: Model.Model
     view: Vue.ComponentPublicInstance
 
-    store = new LocalStore<NotebookApp.Model>('untitled')
+    store = new LocalStore<Model.Model>('untitled')
 
     constructor() {
         super();
         this.model = Vue.reactive(new ModelImpl().load());
         let app = Vue.createApp(rootComponent, {
             model: this.model,
-            'onCell:action': (action: NotebookApp.CellAction) =>
+            'onCell:action': (action: Model.CellAction) =>
                 this.handleCellAction(action)
         });
         this.view = app.mount('body');
@@ -95,7 +90,7 @@ class NotebookApp extends EventEmitter {
         window.addEventListener('beforeunload', () => this.save());
     }
 
-    runCell(cell: NotebookApp.Cell) {
+    runCell(cell: Model.Cell) {
         this.handleCellAction({type: 'exec', cell});
     }
 
@@ -108,7 +103,7 @@ class NotebookApp extends EventEmitter {
 
 
 
-    cellFlags(cell: NotebookApp.Cell) {
+    cellFlags(cell: Model.Cell) {
         /** @todo parse pragmas more systematically *
         return {
             ondemand: !!cell.input.match(/^#pragma ondemand/m)
@@ -118,8 +113,8 @@ class NotebookApp extends EventEmitter {
 */
 
 
-namespace NotebookApp {
-    export interface Model {
+namespace Model {
+    export interface Notebook {
         cells: Cell[]
     }
 
@@ -137,7 +132,7 @@ namespace NotebookApp {
     /**
      * Converts between a model and `.ipynb` JSON format
      */
-    export class IpynbConverter implements Serialization<Model> {
+    export class IpynbConverter implements Serialization<Notebook> {
         metadata: any = {
             "kernelspec": {
                 "display_name": "Python 3 (ipykernel)",
@@ -148,15 +143,15 @@ namespace NotebookApp {
         version = [4, 4]
         options = {indent: 1}
 
-        parse(s: string): Model {
+        parse(s: string): Notebook {
             throw new Error('Method not implemented.');
         }
 
-        stringify(d: Model): string {
+        stringify(d: Notebook): string {
             return JSON.stringify(this.toJSON(d), null, this.options.indent);
         }
 
-        toJSON(model: Model) {
+        toJSON(model: Notebook) {
             return {
                 cells: model.cells.map(cell => ({
                     cell_type: cell.kind,
@@ -179,4 +174,4 @@ namespace NotebookApp {
 type IMimeBundle = {[kind: string]: any}
 
 
-export { NotebookApp, ModelImpl }
+export { Model, ModelImpl }

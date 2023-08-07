@@ -1,5 +1,4 @@
-import { EventEmitter } from 'events';
-import { ModelImpl, NotebookApp } from './notebook_model';
+import { ModelImpl, Model as M } from './notebook_model';
 
 
 class NotebookActions {
@@ -32,7 +31,7 @@ class NotebookActions {
 namespace NotebookActions {
     export interface CellAction {
         type: string
-        cell: NotebookApp.Cell
+        cell: M.Cell
     }
 }
 
