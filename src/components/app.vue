@@ -1,20 +1,42 @@
 <template>
-    <notebook :model="model"/>
+    <div>
+        <command-palette ref="cmd" :commands="commands" @command="onCommand"/>
+        <notebook ref="notebook" :model="model"/>
+    </div>
 </template>
 
 <script lang="ts">
+import { reactive, watch } from 'vue';
 import { Component, Vue, toNative } from 'vue-facing-decorator';
-import { NotebookApp } from '../notebook_model';
-import Notebook from './notebook.vue';
+import { useMagicKeys } from '@vueuse/core';
+
+import { NotebookActions } from '../control';
+import { ModelImpl } from '../notebook_model';
+import Notebook, { INotebook } from './notebook.vue';
+import CommandPalette, { ICommandPalette } from './command-palette/index.vue';
 
 @Component({
-  components: { Notebook }
+  components: { Notebook, CommandPalette }
 })
 class App extends Vue {
-    model: NotebookApp.Model
+    model: ModelImpl
+    control: NotebookActions
+
+    commands = ["exec", "exec-fwd", "insert-after", "delete", "clear"]
+
+    $refs: {cmd: ICommandPalette, notebook: INotebook}
 
     created() {
-        this.model = {cells: [{kind: 'code', input: 'abc'}]};
+        this.model = reactive(new ModelImpl()).load();
+        window.addEventListener('beforeunload', () => this.model.save());
+
+        const keys = useMagicKeys()
+        watch(keys['Meta+K'], (v) => v && this.$refs.cmd.open());
+        watch(keys['Escape'], (v) => v && this.$refs.cmd.close());
+    }
+
+    onCommand(command: {command: string}) {
+        this.$refs.notebook.command(command);
     }
 }
 
