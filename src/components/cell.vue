@@ -43,6 +43,10 @@ class ICell extends Vue {
         this.model.input = this.editor.get();
         Promise.resolve().then(() => this._isUpdating = false);
     }
+
+    focus() {
+        this.editor.focus();
+    }
 }
 
 export { ICell }
