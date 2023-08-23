@@ -16,15 +16,15 @@
 </style>
 
 <script lang="ts">
-import {Component, Vue, Prop, toNative} from 'vue-facing-decorator';
-import {NotebookActions} from '../control';
-import type {ModelImpl, Model as M} from '../model';
+import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
+import { NotebookActions } from '../control';
+import type { ModelImpl, Model as M } from '../model';
 // @ts-ignore
 import Cell from './cell.vue';
 
 @Component({
     emits: ["cell:action"],
-    components: {Cell}
+    components: { Cell }
 })
 class INotebook extends Vue {
     @Prop model: ModelImpl
@@ -91,6 +91,6 @@ class AutoIncMap<K> extends Map<K, number> {
 }
 
 
-export {INotebook}
+export { INotebook }
 export default toNative(INotebook);
 </script>
