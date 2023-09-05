@@ -38,10 +38,8 @@ class NotebookActions {
 
     goDown(focusedCell: M.Cell) {
         let focusedCellIndex = this._cellIndex(focusedCell);
-        console.log("fci1 = " + focusedCellIndex);
         if (focusedCellIndex == this.model.cells.length - 1) {
             focusedCellIndex = this._cellIndex(this.insertAfter(focusedCell));
-            console.log("fci2 = " + focusedCellIndex);
         }
 
         return this.model.cells[focusedCellIndex + 1]
