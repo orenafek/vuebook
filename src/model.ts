@@ -10,6 +10,7 @@ namespace Model {
         kind: string
         input: string
         outputs?: Output[]
+        loading: boolean
     }
 
     export interface Output {
@@ -108,7 +109,8 @@ class ModelImpl implements Model.Notebook {
         return {
             kind: 'code',
             input: code,
-            outputs: []
+            outputs: [],
+            loading: false
         };
     }
 
