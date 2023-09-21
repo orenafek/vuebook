@@ -1,15 +1,18 @@
 <template>
     <div class="notebook">
         <div v-for="cell in model.cells" :key="keyOf(cell)"
-                class="cell-container" :class="{focused: cell === this.focusedCell}"
-                @focusin="focusedCell = cell">
+             class="cell-container" :class="{focused: cell === this.focusedCell}"
+             @focusin="focusedCell = cell" ref="cellContainers">
             <cell :model="cell" ref="cells" @action="cellAction(cell, $event)"/>
         </div>
     </div>
 </template>
 
 <style>
-.focused { border-left: 3px solid blue; margin-left: -3px; }
+.focused {
+    border-left: 3px solid blue;
+    margin-left: -3px;
+}
 </style>
 
 <script lang="ts">
@@ -34,16 +37,23 @@ class INotebook extends Vue {
         this.control = new NotebookActions(this.model);
     }
 
-    cellAction(cell: M.Cell, action: {cell?: M.Cell, type: string}) {
+    cellAction(cell: M.Cell, action: { cell?: M.Cell, type: string }) {
         action = {cell, ...action};
-        this.control.handleCellAction(action as NotebookActions.CellAction);
+        const cellActionResult = this.control.handleCellAction(action as NotebookActions.CellAction);
+
         switch (action.type) {
-            case 'delete': this.cleanup(); break;
+            case 'delete':
+                this.cleanup();
+                break;
+            case 'go-down':
+                if (cellActionResult != undefined) {
+                    this.focusCell(cellActionResult.reply as M.Cell);
+                }
         }
         this.$emit('cell:action', action);
     }
 
-    command(command: {command: string}) {
+    command(command: { command: string }) {
         if (this.focusedCell)
             this.cellAction(this.focusedCell, {type: command.command});
     }
@@ -55,16 +65,22 @@ class INotebook extends Vue {
     /** Remove deleted cells from key map */
     cleanup() {
         let s = new Set(this.model.cells);
-        let redundant = [...this._keys.keys()] .filter(k => !s.has(k));
+        let redundant = [...this._keys.keys()].filter(k => !s.has(k));
         for (let k of redundant) this._keys.delete(k);
 
         if (!s.has(this.focusedCell)) this.focusedCell = undefined;
+    }
+
+    focusCell(cell: M.Cell) {
+        this.focusedCell = cell;
+        this.$refs.cellContainers[this.keyOf(cell)].focus();
+        this.$refs.cells[this.keyOf(cell)].focus();
     }
 }
 
 /** Auxiliary for cell keys */
 class AutoIncMap<K> extends Map<K, number> {
-    _fresh = 0
+    _fresh = -1
 
     getOrAlloc(k: K) {
         let v = this.get(k);

@@ -29,6 +29,10 @@ class CodeEditor extends EventEmitter {
             {doc: text, extensions: this.extensions}));
     }
 
+    focus(){
+        this.cm.focus();
+    }
+
     get extensions() { return Setup.of(this); }
 
 }
@@ -44,7 +48,7 @@ namespace Setup {
         create() { return null; },
         update(v: CodeEditor) { return v; }
     });
-    
+
     export const extensions = [
         keymap.of(defaultKeymap), keymap.of(historyKeymap),
         keymap.of([indentWithTab]),
@@ -57,7 +61,7 @@ namespace Setup {
             autocomplete: jupyterCompletions
         })
     ];
-    
+
     function updateListener() {
         return EditorView.updateListener.of(v => {
             if (v.docChanged) v.state.field(operator).emit('change');
@@ -72,7 +76,8 @@ namespace Setup {
             {key: "Mod-Enter", run: emit('exec')},
             {key: "Ctrl-=", run: emit('insert-after')},
             {key: "Ctrl-+", run: emit('insert-before')},
-            {key: "Ctrl--", run: emit('delete')}
+            {key: "Ctrl--", run: emit('delete')},
+            {key: "ArrowDown", run: emit('go-down')}
         ]);
     }
 

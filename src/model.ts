@@ -1,4 +1,5 @@
 import {LocalStore, Serialization} from './infra/store';
+import {createApp} from "vue";
 
 namespace Model {
     export interface Notebook {
@@ -9,13 +10,14 @@ namespace Model {
         kind: string
         input: string
         outputs?: Output[]
+        loading: boolean
     }
 
     export interface Output {
         /** text, HTMl, etc. */
         /** TODO: Change to an Or of types. */
         kind: string
-        payload: string
+        payload: string | object
     }
 
     /**
@@ -61,7 +63,7 @@ namespace Model {
 }
 
 class ModelImpl implements Model.Notebook {
-    cells: Model.Cell[]
+    cells: Model.Cell[] = []
 
     store = new LocalStore<Model.Notebook>('untitled')
 
@@ -76,6 +78,12 @@ class ModelImpl implements Model.Notebook {
     from(json?: { cells?: Model.Cell[] }) {
         this.cells = json?.cells ?? [this.mkCodeCell()];
         return this;
+    }
+
+    clearAllOutputs() {
+        for (let cell of this.cells){
+            this.clearOutputs(cell);
+        }
     }
 
     clearOutputs(cell: Model.Cell) {
@@ -101,16 +109,29 @@ class ModelImpl implements Model.Notebook {
         return {
             kind: 'code',
             input: code,
-            outputs: []
+            outputs: [],
+            loading: true
         };
     }
 
+    renderComponent({el, component, props, appContext}) {
+        let app = createApp(component, props)
+        Object.assign(app._context, appContext) // must use Object.assign on _context
+        app.mount(el)
+
+        return () => {
+            // destroy app/component
+            app?.unmount()
+            app = undefined
+        }
+    }
+
     addResult(cell: Model.Cell, result: IMimeBundle) {
-        let viewable = ['image/svg+xml', 'text/html', 'text/plain'];
+        let viewable = ['image/svg+xml', 'text/html', 'text/plain', 'application/vue3'];
         for (let kind of viewable) {
             let payload = result[kind];
-            if (typeof payload === 'string') {
-                cell.outputs.push({kind, payload})
+            if (typeof payload === 'string' || typeof payload === 'object') {
+                cell.outputs.push({kind, payload});
                 break;
             }
         }

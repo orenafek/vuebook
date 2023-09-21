@@ -22,6 +22,7 @@
 <script lang="ts">
 import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
 import { Command } from 'vue-command-palette';
+import './index.scss';
 
 @Component({
     emits: ['command'],

@@ -24,7 +24,7 @@ class App extends Vue {
     model: ModelImpl
     control: NotebookActions
 
-    commands = ["exec", "exec-fwd", "insert-after", "delete", "clear"]
+    commands = ["exec", "exec-fwd", "insert-after", "go-down", "delete", "clear"]
 
     $refs: {cmd: ICommandPalette, notebook: INotebook}
 
@@ -35,6 +35,7 @@ class App extends Vue {
         const keys = useMagicKeys()
         watch(keys['Meta+K'], (v) => v && this.$refs.cmd.open());
         watch(keys['Escape'], (v) => v && this.$refs.cmd.close());
+        watch(keys['Down'] , (v) => v && this.$refs.cmd.close())
     }
 
     onCommand(command: {command: string}) {

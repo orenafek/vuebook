@@ -9,7 +9,10 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "allowJs": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "declaration": true,
+    "declarationMap": true,
+    "declarationDir": "dist"
   },
-  "exclude": ["dist", "build"]
+  "include": ["src/**/*"]
 }

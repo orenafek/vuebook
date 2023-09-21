@@ -3,14 +3,15 @@ import fs from 'fs';
 
 interface Serialization<Doc = any> {
     parse(s: string): Doc
+
     stringify(d: Doc): string
 }
 
 class VersionedSerialization<Doc = any> implements Serialization<Doc> {
-    inner: Serialization<{version: string, data: Doc}>
+    inner: Serialization<{ version: string, data: Doc }>
     version: string
 
-    constructor(version: string, inner: Serialization<{version: string, data: Doc}>) {
+    constructor(version: string, inner: Serialization<{ version: string, data: Doc }>) {
         this.inner = inner;
         this.version = version;
     }
@@ -32,11 +33,12 @@ class VersionedSerialization<Doc = any> implements Serialization<Doc> {
 }
 
 const DEFAULT_VER = '0.1.0',
-      DEFAULT_SER = new VersionedSerialization(DEFAULT_VER, JSON);
+    DEFAULT_SER = new VersionedSerialization(DEFAULT_VER, JSON);
 
 
 interface StoreBase<Doc = any> {
     load(): Doc
+
     save(p: Doc): void
 }
 
@@ -102,4 +104,4 @@ function persistField<T>(obj: T, key: keyof T, store: StoreBase<any>) {
 }
 
 
-export { Serialization, StoreBase, LocalStore, FileStore, DEFAULT_SER, persistField }
+export {Serialization, StoreBase, LocalStore, FileStore, DEFAULT_SER, persistField}
