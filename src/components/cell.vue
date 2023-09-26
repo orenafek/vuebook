@@ -17,11 +17,14 @@
 
 <script lang="ts">
 import {Component, Prop, toNative, Vue} from 'vue-facing-decorator';
-import {CodeEditor} from './editor';
+import {CodeEditor, ICodeEditor} from './editor';
 
 
 // @ts-ignore
 import SpinnerAnim from "./loading-spinner/spinner-anim.vue";
+import {Completion} from "@codemirror/autocomplete";
+import {reactive} from "vue";
+import {vbLog} from "../infra/log";
 
 @Component({
     "emits": ['action'],
@@ -29,7 +32,12 @@ import SpinnerAnim from "./loading-spinner/spinner-anim.vue";
 })
 class ICell extends Vue {
     @Prop model: any
+
+    @Prop codeEditorType: ICodeEditor
+    @Prop completions: Completion[]
+
     editor: CodeEditor
+
     htmlMime = ['image/svg+xml', 'text/html']
 
     applications = ['application/vue3']
@@ -39,7 +47,9 @@ class ICell extends Vue {
     private _isUpdating = false
 
     mounted() {
-        this.editor = new CodeEditor(this.$refs.input, this.model.input);
+        vbLog('this.completions = ', this.completions);
+        this.editor = new this.codeEditorType(this.$refs.input, this.model.input, this.completions);
+        console.log('(vuebook) cell.vue:: this.editor = ', this.editor);
         this.editor.on('change', () => this.updateModel());
         this.editor.on('action', a => this.$emit('action', a));
         this.$watch(() => this.model.input, v => {

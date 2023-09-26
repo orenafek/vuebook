@@ -3,7 +3,7 @@
         <div v-for="cell in model.cells" :key="keyOf(cell)"
              class="cell-container" :class="{focused: cell === this.focusedCell}"
              @focusin="focusedCell = cell" ref="cellContainers">
-            <cell :model="cell" ref="cells" @action="cellAction(cell, $event)"/>
+            <cell :model="cell" ref="cells" @action="cellAction(cell, $event)" :codeEditorType="codeEditorType" />
         </div>
     </div>
 </template>
@@ -21,6 +21,7 @@ import { NotebookActions } from '../control';
 import type { ModelImpl, Model as M } from '../model';
 // @ts-ignore
 import Cell from './cell.vue';
+import {ICodeEditor} from "./editor";
 
 @Component({
     emits: ["cell:action"],
@@ -28,6 +29,9 @@ import Cell from './cell.vue';
 })
 class INotebook extends Vue {
     @Prop model: ModelImpl
+
+    @Prop codeEditorType: ICodeEditor
+
     _keys: AutoIncMap<M.Cell>
     control: NotebookActions
     focusedCell: M.Cell = undefined
