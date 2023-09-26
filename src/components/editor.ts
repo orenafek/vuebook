@@ -1,15 +1,19 @@
-import { EventEmitter } from 'events';
-import { EditorView, keymap } from '@codemirror/view';
-import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
-import { EditorState, StateField } from '@codemirror/state';
-import { syntaxHighlighting, defaultHighlightStyle, indentUnit } from '@codemirror/language';
-import { python, pythonLanguage } from '@codemirror/lang-python';
-import { autocompletion, CompletionContext } from '@codemirror/autocomplete';
+import {EventEmitter} from 'events';
+import {EditorView, keymap} from '@codemirror/view';
+import {defaultKeymap, history, historyKeymap, indentWithTab} from '@codemirror/commands';
+import {EditorState, StateField} from '@codemirror/state';
+import {defaultHighlightStyle, indentUnit, syntaxHighlighting} from '@codemirror/language';
+import {python, pythonLanguage} from '@codemirror/lang-python';
+import {autocompletion, Completion, CompletionContext} from '@codemirror/autocomplete';
 
-
+interface ICodeEditor {
+    new(container: HTMLElement, initialContent: string, completions?: Completion[]): CodeEditor
+}
 
 class CodeEditor extends EventEmitter {
     cm: EditorView
+
+    _completions?: Completion[]
 
     constructor(container: HTMLElement, initialContent: string = '') {
         super();
@@ -18,6 +22,7 @@ class CodeEditor extends EventEmitter {
             extensions: this.extensions,
             parent: container
         });
+        this._completions = [];
     }
 
     get() {
@@ -29,27 +34,43 @@ class CodeEditor extends EventEmitter {
             {doc: text, extensions: this.extensions}));
     }
 
-    focus(){
+    focus() {
         this.cm.focus();
     }
 
-    get extensions() { return Setup.of(this); }
+    get extensions() {
+        return Setup.of(this);
+    }
 
+    get completions(): Completion[] {
+        return this._completions;
+    }
+
+    set completions(c: Completion[]) {
+        this._completions = c;
+        this.cm.setState(EditorState.create(
+            {doc: this.cm.state.doc, extensions: this.extensions}
+        ));
+    }
 }
 
 
 namespace Setup {
 
     export function of(o: CodeEditor) {
-        return [extensions, operator.init(() => o)];
+        return [extensions(o.completions), operator.init(() => o)];
     }
 
     export const operator = StateField.define<CodeEditor>({
-        create() { return null; },
-        update(v: CodeEditor) { return v; }
+        create() {
+            return null;
+        },
+        update(v: CodeEditor) {
+            return v;
+        }
     });
 
-    export const extensions = [
+    export const extensions = completions => [
         keymap.of(defaultKeymap), keymap.of(historyKeymap),
         keymap.of([indentWithTab]),
         history(),
@@ -57,9 +78,7 @@ namespace Setup {
         updateListener(), nav(),
         autocompletion(),
         python(),
-        pythonLanguage.data.of({
-            autocomplete: jupyterCompletions
-        })
+        pythonLanguage.data.of({autocomplete: context => autoCompletion(context, completions)})
     ];
 
     function updateListener() {
@@ -83,19 +102,15 @@ namespace Setup {
         ]);
     }
 
-}
-
-function jupyterCompletions(context: CompletionContext) {
-    let word = context.matchBefore(/\w*/)
-    if (word.from == word.to && !context.explicit)
-      return null
-    return {
-      from: word.from,
-      options: [
-        {label: "%time", type: "keyword"}
-      ]
+    export function autoCompletion(context: CompletionContext, completions: Completion[] = []) {
+        let word = context.matchBefore(/\w*/)
+        if (word.from == word.to && !context.explicit)
+            return null
+        return {
+            from: word.from,
+            options: completions
+        }
     }
+
 }
-
-
-export { CodeEditor }
+export {CodeEditor, ICodeEditor, Setup, Completion, EditorView}

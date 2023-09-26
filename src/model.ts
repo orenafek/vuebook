@@ -1,5 +1,7 @@
 import {LocalStore, Serialization} from './infra/store';
 import {createApp} from "vue";
+import {Completion} from "@codemirror/autocomplete";
+import {vbLog} from "./infra/log";
 
 namespace Model {
     export interface Notebook {
@@ -11,6 +13,7 @@ namespace Model {
         input: string
         outputs?: Output[]
         loading: boolean
+        completions?: Completion[]
     }
 
     export interface Output {
@@ -110,7 +113,8 @@ class ModelImpl implements Model.Notebook {
             kind: 'code',
             input: code,
             outputs: [],
-            loading: false
+            loading: false,
+            completions: []
         };
     }
 
@@ -150,6 +154,10 @@ class ModelImpl implements Model.Notebook {
 
      resetLoading(){
         this.cells.forEach(c => c.loading = false);
+    }
+
+    updateCompletions(completions?: Completion[]) {
+        this.cells.forEach(c => c.completions = completions);
     }
 }
 

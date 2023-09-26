@@ -22,7 +22,6 @@
 import {Component, Prop, toNative, Vue} from 'vue-facing-decorator';
 import {CodeEditor} from './editor';
 
-
 // @ts-ignore
 import SpinnerAnim from "./loading-spinner/spinner-anim.vue";
 
@@ -58,6 +57,9 @@ class ICell extends Vue {
         });
         this.$watch(() => this.model.outputs, v => {
             this.expand();
+        })
+        this.$watch(() => this.model.completions, v => {
+            this.editor.completions = this.model.completions;
         })
     }
 
