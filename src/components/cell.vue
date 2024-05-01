@@ -4,7 +4,10 @@
         <div class="cell--outputs">
             <div class="cell--output" v-for="out in model.outputs" :data-kind="out.kind">
                 <div v-if="htmlMime.includes(out.kind)"
-                    class="payload image" v-html="out.payload"></div>
+                     class="payload image" v-html="out.payload"></div>
+                <div v-else-if="applications.includes(out.kind)">
+                    <component :is="out.payload.is" v-bind="out.payload.props"></component>
+                </div>
                 <div v-else class="payload">{{ out.payload }}</div>
             </div>
         </div>
@@ -12,8 +15,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
-import { CodeEditor } from './editor';
+import {Component, Prop, toNative, Vue} from 'vue-facing-decorator';
+import {CodeEditor} from './editor';
 
 @Component({
     "emits": ['action']
@@ -23,7 +26,9 @@ class ICell extends Vue {
     editor: CodeEditor
     htmlMime = ['image/svg+xml', 'text/html']
 
-    $refs: {input: HTMLDivElement}
+    applications = ['application/vue3']
+
+    $refs: { input: HTMLDivElement}
 
     private _isUpdating = false
 
@@ -43,8 +48,12 @@ class ICell extends Vue {
         this.model.input = this.editor.get();
         Promise.resolve().then(() => this._isUpdating = false);
     }
+
+    focus() {
+        this.editor.focus();
+    }
 }
 
-export { ICell }
+export {ICell}
 export default toNative(ICell);
 </script>
