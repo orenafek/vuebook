@@ -147,6 +147,10 @@ class ModelImpl implements Model.Notebook {
         if (!term) cell.outputs.push(term = {kind: 'term', payload: ''});
         term.payload += text;
     }
+
+     resetLoading(){
+        this.cells.forEach(c => c.loading = false);
+    }
 }
 
 

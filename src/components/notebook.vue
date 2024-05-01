@@ -16,7 +16,7 @@
 </style>
 
 <script lang="ts">
-import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
+import {Component, Vue, Prop, toNative, Ref} from 'vue-facing-decorator';
 import { NotebookActions } from '../control';
 import type { ModelImpl, Model as M } from '../model';
 // @ts-ignore
@@ -49,7 +49,15 @@ class INotebook extends Vue {
                 if (cellActionResult != undefined) {
                     this.focusCell(cellActionResult.reply as M.Cell);
                 }
+                break;
+            case 'expand-all':
+                (this.$refs.cells as Array<typeof Cell>).forEach(c => c.expand());
+                return;
+            case 'collapse-all':
+                (this.$refs.cells as Array<typeof Cell>).forEach(c => c.collapse());
+                return;
         }
+
         this.$emit('cell:action', action);
     }
 

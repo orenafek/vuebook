@@ -1,7 +1,10 @@
 <template>
     <div class="cell">
-        <div class="cell--input" ref="input"></div>
-        <div class="cell--outputs">
+        <div class="cell--input-container">
+            <div class="cell--input" ref="input"></div>
+            <collapse-button :toggle="toggleCollapsed" :collapsed="collapsed" class="collapse-btn-extend"/>
+        </div>
+        <div class="cell--outputs" v-if="!collapsed">
             <spinner-anim v-if="model.loading" style="--size: 20px; display: inline-block; vertical-align: middle"/>
             <div class="cell--output" v-for="out in model.outputs" :data-kind="out.kind">
                 <div v-if="htmlMime.includes(out.kind)"
@@ -23,18 +26,24 @@ import {CodeEditor} from './editor';
 // @ts-ignore
 import SpinnerAnim from "./loading-spinner/spinner-anim.vue";
 
+//@ts-ignore
+import CollapseButton from "./collapse-button/collapse-button.vue";
+
 @Component({
     "emits": ['action'],
-    components: {SpinnerAnim}
+    components: {SpinnerAnim, CollapseButton}
 })
 class ICell extends Vue {
     @Prop model: any
+
+    collapsed: boolean = false;
+
     editor: CodeEditor
     htmlMime = ['image/svg+xml', 'text/html']
 
     applications = ['application/vue3']
 
-    $refs: { input: HTMLDivElement}
+    $refs: { input: HTMLDivElement }
 
     private _isUpdating = false
 
@@ -47,6 +56,9 @@ class ICell extends Vue {
                 this.editor.set(v);
             }
         });
+        this.$watch(() => this.model.outputs, v => {
+            this.expand();
+        })
     }
 
     updateModel() {
@@ -58,8 +70,34 @@ class ICell extends Vue {
     focus() {
         this.editor.focus();
     }
+
+    toggleCollapsed() {
+        this.collapsed = !this.collapsed;
+    }
+
+    collapse() {
+        this.collapsed = true;
+    }
+
+    expand(){
+        this.collapsed = false;
+    }
 }
 
 export {ICell}
 export default toNative(ICell);
 </script>
+
+<style lang="scss" scoped>
+.collapse-btn-extend {
+    grid-area: btn;
+    width: 3%;
+}
+
+.cell--input-container {
+    display: grid;
+    grid-template-columns: 3% auto;
+    grid-template-areas: 'btn cell-input';
+}
+
+</style>
