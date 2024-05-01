@@ -2,6 +2,7 @@
     <div class="cell">
         <div class="cell--input" ref="input"></div>
         <div class="cell--outputs">
+            <spinner-anim v-if="model.loading" style="--size: 20px; display: inline-block; vertical-align: middle"/>
             <div class="cell--output" v-for="out in model.outputs" :data-kind="out.kind">
                 <div v-if="htmlMime.includes(out.kind)"
                      class="payload image" v-html="out.payload"></div>
@@ -18,8 +19,13 @@
 import {Component, Prop, toNative, Vue} from 'vue-facing-decorator';
 import {CodeEditor} from './editor';
 
+
+// @ts-ignore
+import SpinnerAnim from "./loading-spinner/spinner-anim.vue";
+
 @Component({
-    "emits": ['action']
+    "emits": ['action'],
+    components: {SpinnerAnim}
 })
 class ICell extends Vue {
     @Prop model: any
