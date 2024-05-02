@@ -1,6 +1,10 @@
 {
   "name": "vuebook",
   "version": "0.1.0",
+    "scripts": {
+    "build": "webpack",
+    "build_docker": "webpack && npm link"
+  },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
