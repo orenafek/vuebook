@@ -3,7 +3,7 @@
         <div v-for="cell in model.cells" :key="keyOf(cell)"
              class="cell-container" :class="{focused: cell === this.focusedCell}"
              @focusin="focusedCell = cell" ref="cellContainers">
-            <cell :model="cell" ref="cells" @action="cellAction(cell, $event)" />
+            <cell :model="cell" ref="cells" @action="cellAction(cell, $event)"/>
         </div>
     </div>
 </template>
@@ -16,17 +16,15 @@
 </style>
 
 <script lang="ts">
-import {Component, Vue, Prop, toNative, Ref} from 'vue-facing-decorator';
-import { NotebookActions } from '../control';
-import type { ModelImpl, Model as M } from '../model';
+import {Component, Prop, toNative, Vue} from 'vue-facing-decorator';
+import {NotebookActions} from '../control';
+import type {Model as M, ModelImpl} from '../model';
 // @ts-ignore
 import Cell from './cell.vue';
-import {ICodeEditor} from "./editor";
-import {Completion} from "@codemirror/autocomplete";
 
 @Component({
     emits: ["cell:action"],
-    components: { Cell }
+    components: {Cell}
 })
 class INotebook extends Vue {
     @Prop model: ModelImpl
@@ -47,19 +45,17 @@ class INotebook extends Vue {
 
         switch (action.type) {
             case 'delete':
+                if (cellActionResult != undefined) {
+                    this.focusCell(cellActionResult.reply as M.Cell);
+                }
                 this.cleanup();
                 break;
+            case 'go-up':
             case 'go-down':
                 if (cellActionResult != undefined) {
                     this.focusCell(cellActionResult.reply as M.Cell);
                 }
                 break;
-            case 'expand-all':
-                (this.$refs.cells as Array<typeof Cell>).forEach(c => c.expand());
-                return;
-            case 'collapse-all':
-                (this.$refs.cells as Array<typeof Cell>).forEach(c => c.collapse());
-                return;
         }
 
         this.$emit('cell:action', action);
@@ -88,6 +84,15 @@ class INotebook extends Vue {
         this.$refs.cellContainers[this.keyOf(cell)].focus();
         this.$refs.cells[this.keyOf(cell)].focus();
     }
+
+    expandAll() {
+        (this.$refs.cells as Array<typeof Cell>).forEach(c => c.expand());
+    }
+
+    collapseAll() {
+        (this.$refs.cells as Array<typeof Cell>).forEach(c => c.collapse());
+    }
+
 }
 
 /** Auxiliary for cell keys */
@@ -103,6 +108,6 @@ class AutoIncMap<K> extends Map<K, number> {
 }
 
 
-export { INotebook }
+export {INotebook}
 export default toNative(INotebook);
 </script>

@@ -1,7 +1,6 @@
 import {LocalStore, Serialization} from './infra/store';
 import {createApp} from "vue";
 import {Completion} from "@codemirror/autocomplete";
-import {vbLog} from "./infra/log";
 
 namespace Model {
     export interface Notebook {
@@ -84,7 +83,7 @@ class ModelImpl implements Model.Notebook {
     }
 
     clearAllOutputs() {
-        for (let cell of this.cells){
+        for (let cell of this.cells) {
             this.clearOutputs(cell);
         }
     }
@@ -105,7 +104,12 @@ class ModelImpl implements Model.Notebook {
 
     delete(cell: Model.Cell) {
         let at = this.cells.indexOf(cell);
-        if (at >= 0) this.cells.splice(at, 1);
+        if (at >= 0) {
+            const removed = this.cells.indexOf(this.cells.splice(at, 1)[0]);
+            return removed != 0 ? this.cells[removed - 1] : undefined;
+        }
+
+        return undefined;
     }
 
     mkCodeCell(code: string = ''): Model.Cell {
@@ -152,7 +156,7 @@ class ModelImpl implements Model.Notebook {
         term.payload += text;
     }
 
-     resetLoading(){
+    resetLoading() {
         this.cells.forEach(c => c.loading = false);
     }
 
