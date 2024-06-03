@@ -1,4 +1,4 @@
-import {ModelImpl, Model as M} from './model';
+import {Model as M, ModelImpl} from './model';
 
 
 class NotebookActions {
@@ -20,7 +20,10 @@ class NotebookActions {
                 this.insertAfter(action.cell);
                 break;
             case 'delete':
-                this.model.delete(action.cell);
+                reply = this.model.delete(action.cell);
+                break;
+            case 'go-up':
+                reply = this.goUp(action.cell);
                 break;
             case 'go-down':
                 reply = this.goDown(action.cell);
@@ -36,17 +39,24 @@ class NotebookActions {
         return this.model.cells.indexOf(cell);
     }
 
-    goDown(focusedCell: M.Cell) {
+    goUp(focusedCell: M.Cell) {
         let focusedCellIndex = this._cellIndex(focusedCell);
-        if (focusedCellIndex == this.model.cells.length - 1) {
-            focusedCellIndex = this._cellIndex(this.insertAfter(focusedCell));
+        if (focusedCellIndex != 0) {
+            focusedCellIndex -= 1;
         }
-
-        return this.model.cells[focusedCellIndex + 1]
-
+        return this.model.cells[focusedCellIndex]
     }
 
-    insertAfter(cell: M.Cell) : M.Cell {
+    goDown(focusedCell: M.Cell) {
+        let focusedCellIndex = this._cellIndex(focusedCell);
+        if (focusedCellIndex != this.model.cells.length - 1) {
+            focusedCellIndex += 1
+        }
+
+        return this.model.cells[focusedCellIndex]
+    }
+
+    insertAfter(cell: M.Cell): M.Cell {
         const newCell = this.model.mkCodeCell();
         this.model.insert(cell, newCell, true);
         return newCell;
