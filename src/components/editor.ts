@@ -77,7 +77,9 @@ namespace Setup {
             {key: "Ctrl-=", run: emit('insert-after')},
             {key: "Ctrl-+", run: emit('insert-before')},
             {key: "Ctrl--", run: emit('delete')},
-            {key: "ArrowDown", run: emit('go-down')}
+            {key: "ArrowDown", run: emit('go-down')},
+            {key: 'Ctrl-Shift-+', run: emit('expand-all')},
+            {key: 'Ctrl-Shift--', run: emit('collapse-all')},
         ]);
     }
 
