@@ -34,6 +34,10 @@ const opts = (argv) => ({
             }
         },
         {
+            test: /\.(woff|woff2|eot|ttf|otf)$/i,
+            type: 'asset/resource',
+        },        
+        {
             test: /\.vue$/,
             use: 'vue-loader'
         }
@@ -77,7 +81,8 @@ module.exports = (env, argv) => [
         path: `${__dirname}/dist`,
         library: {
             type: 'module'
-        }
+        },
+        publicPath: 'dist/'
     },
     module: {rules},
     resolve: {
