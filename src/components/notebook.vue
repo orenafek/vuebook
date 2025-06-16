@@ -1,30 +1,35 @@
 <template>
     <div class="notebook">
         <div v-for="cell in model.cells" :key="keyOf(cell)"
-                class="cell-container" :class="{focused: cell === this.focusedCell}"
-                @focusin="focusedCell = cell">
+             class="cell-container" :class="{focused: cell === this.focusedCell}"
+             @focusin="focusedCell = cell" ref="cellContainers">
             <cell :model="cell" ref="cells" @action="cellAction(cell, $event)"/>
         </div>
     </div>
 </template>
 
 <style>
-.focused { border-left: 3px solid blue; margin-left: -3px; }
+.focused {
+    border-left: 3px solid blue;
+    margin-left: -3px;
+}
 </style>
 
 <script lang="ts">
-import { Component, Vue, Prop, toNative } from 'vue-facing-decorator';
-import { NotebookActions } from '../control';
-import type { ModelImpl, Model as M } from '../model';
+import {Component, Prop, toNative, Vue} from 'vue-facing-decorator';
+import {NotebookActions} from '../control';
+import type {Model as M, ModelImpl} from '../model';
 // @ts-ignore
 import Cell from './cell.vue';
 
 @Component({
     emits: ["cell:action"],
-    components: { Cell }
+    components: {Cell}
 })
 class INotebook extends Vue {
     @Prop model: ModelImpl
+
+
     _keys: AutoIncMap<M.Cell>
     control: NotebookActions
     focusedCell: M.Cell = undefined
@@ -34,16 +39,29 @@ class INotebook extends Vue {
         this.control = new NotebookActions(this.model);
     }
 
-    cellAction(cell: M.Cell, action: {cell?: M.Cell, type: string}) {
+    cellAction(cell: M.Cell, action: { cell?: M.Cell, type: string }) {
         action = {cell, ...action};
-        this.control.handleCellAction(action as NotebookActions.CellAction);
+        const cellActionResult = this.control.handleCellAction(action as NotebookActions.CellAction);
+
         switch (action.type) {
-            case 'delete': this.cleanup(); break;
+            case 'delete':
+                if (cellActionResult != undefined) {
+                    this.focusCell(cellActionResult.reply as M.Cell);
+                }
+                this.cleanup();
+                break;
+            case 'go-up':
+            case 'go-down':
+                if (cellActionResult != undefined) {
+                    this.focusCell(cellActionResult.reply as M.Cell);
+                }
+                break;
         }
+
         this.$emit('cell:action', action);
     }
 
-    command(command: {command: string}) {
+    command(command: { command: string }) {
         if (this.focusedCell)
             this.cellAction(this.focusedCell, {type: command.command});
     }
@@ -55,16 +73,31 @@ class INotebook extends Vue {
     /** Remove deleted cells from key map */
     cleanup() {
         let s = new Set(this.model.cells);
-        let redundant = [...this._keys.keys()] .filter(k => !s.has(k));
+        let redundant = [...this._keys.keys()].filter(k => !s.has(k));
         for (let k of redundant) this._keys.delete(k);
 
         if (!s.has(this.focusedCell)) this.focusedCell = undefined;
     }
+
+    focusCell(cell: M.Cell) {
+        this.focusedCell = cell;
+        this.$refs.cellContainers[this.keyOf(cell)].focus();
+        this.$refs.cells[this.keyOf(cell)].focus();
+    }
+
+    expandAll() {
+        (this.$refs.cells as Array<typeof Cell>).forEach(c => c.expand());
+    }
+
+    collapseAll() {
+        (this.$refs.cells as Array<typeof Cell>).forEach(c => c.collapse());
+    }
+
 }
 
 /** Auxiliary for cell keys */
 class AutoIncMap<K> extends Map<K, number> {
-    _fresh = 0
+    _fresh = -1
 
     getOrAlloc(k: K) {
         let v = this.get(k);
@@ -75,6 +108,6 @@ class AutoIncMap<K> extends Map<K, number> {
 }
 
 
-export { INotebook }
+export {INotebook}
 export default toNative(INotebook);
 </script>

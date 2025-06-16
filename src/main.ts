@@ -1,4 +1,4 @@
-import { createApp } from 'vue';
+import {createApp} from 'vue';
 // @ts-ignore
 import AppComponent from './components/app.vue';
 

@@ -1,4 +1,6 @@
 import {LocalStore, Serialization} from './infra/store';
+import {createApp} from "vue";
+import {Completion} from "@codemirror/autocomplete";
 
 namespace Model {
     export interface Notebook {
@@ -9,13 +11,15 @@ namespace Model {
         kind: string
         input: string
         outputs?: Output[]
+        loading: boolean
+        completions?: Completion[]
     }
 
     export interface Output {
         /** text, HTMl, etc. */
         /** TODO: Change to an Or of types. */
         kind: string
-        payload: string
+        payload: string | object
     }
 
     /**
@@ -61,7 +65,7 @@ namespace Model {
 }
 
 class ModelImpl implements Model.Notebook {
-    cells: Model.Cell[]
+    cells: Model.Cell[] = []
 
     store = new LocalStore<Model.Notebook>('untitled')
 
@@ -76,6 +80,12 @@ class ModelImpl implements Model.Notebook {
     from(json?: { cells?: Model.Cell[] }) {
         this.cells = json?.cells ?? [this.mkCodeCell()];
         return this;
+    }
+
+    clearAllOutputs() {
+        for (let cell of this.cells) {
+            this.clearOutputs(cell);
+        }
     }
 
     clearOutputs(cell: Model.Cell) {
@@ -94,23 +104,42 @@ class ModelImpl implements Model.Notebook {
 
     delete(cell: Model.Cell) {
         let at = this.cells.indexOf(cell);
-        if (at >= 0) this.cells.splice(at, 1);
+        if (at >= 0) {
+            const removed = this.cells.indexOf(this.cells.splice(at, 1)[0]);
+            return removed != 0 ? this.cells[removed - 1] : undefined;
+        }
+
+        return undefined;
     }
 
     mkCodeCell(code: string = ''): Model.Cell {
         return {
             kind: 'code',
             input: code,
-            outputs: []
+            outputs: [],
+            loading: false,
+            completions: []
         };
     }
 
+    renderComponent({el, component, props, appContext}) {
+        let app = createApp(component, props)
+        Object.assign(app._context, appContext) // must use Object.assign on _context
+        app.mount(el)
+
+        return () => {
+            // destroy app/component
+            app?.unmount()
+            app = undefined
+        }
+    }
+
     addResult(cell: Model.Cell, result: IMimeBundle) {
-        let viewable = ['image/svg+xml', 'text/html', 'text/plain'];
+        let viewable = ['image/svg+xml', 'text/html', 'text/plain', 'application/vue3'];
         for (let kind of viewable) {
             let payload = result[kind];
-            if (typeof payload === 'string') {
-                cell.outputs.push({kind, payload})
+            if (typeof payload === 'string' || typeof payload === 'object') {
+                cell.outputs.push({kind, payload});
                 break;
             }
         }
@@ -125,6 +154,14 @@ class ModelImpl implements Model.Notebook {
         let term = cell.outputs.find(o => o.kind === 'term');
         if (!term) cell.outputs.push(term = {kind: 'term', payload: ''});
         term.payload += text;
+    }
+
+    resetLoading() {
+        this.cells.forEach(c => c.loading = false);
+    }
+
+    updateCompletions(completions?: Completion[]) {
+        this.cells.forEach(c => c.completions = completions);
     }
 }
 
